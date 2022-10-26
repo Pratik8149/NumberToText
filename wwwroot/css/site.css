@@ -16,3 +16,12 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.text-input {
+  /*display: flex;*/
+  /*align-items: center;*/
+  margin-top: 50px;
+  margin-bottom: 50px !important;
+  max-width: 500px;
+  margin-left: 400px;
+}
