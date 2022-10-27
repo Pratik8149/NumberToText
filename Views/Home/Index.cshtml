@@ -6,8 +6,8 @@
 @using (Html.BeginForm("Index", "Home", FormMethod.Post))
 {
     <div class="text-center align-items-center">
-        <h1 class="display-4">Welcome</h1>
-        <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+        <h1 class="display-4">Welcome to the N2T web application</h1>
+        <p>Kindly enter the desired number in the textbox below to get it's conversion in the text format.</p>
 
         <div class="input-group mb-3 text-input">
             <div class="input-group-prepend">
@@ -25,7 +25,7 @@
 
         @if (!Model.Text.Contains("INVALID") && !Model.Text.Contains("Nothing"))
         {
-            <h3>You entered: @Model.Amount</h3>
+            <h3>You entered: $ @Model.Amount</h3>
         }
         <h3>@Model.Text</h3>
     </div>
