@@ -7,7 +7,7 @@ namespace NumberToText.Helpers;
 /// </summary>
 public static class TextConversionHelper
 {
-	private const string ExceededLimitError = "INVALID INPUT! => THE AMOUNT SHOULD BE BELOW 10000";
+	private const string ExceededLimitError = "INVALID INPUT! => THE AMOUNT SHOULD BE BELOW $100,000";
 	private const string NegativeNumberError = "INVALID INPUT! => AMOUNT SHOULD BE POSITIVE!";
 	private const string DecimalPlacesError = "INVALID INPUT! => ENTER ONLY TWO DIGITS AFTER THE DECIMAL POINT!";
 
@@ -69,6 +69,7 @@ public static class TextConversionHelper
 			2 => store.ContainsKey(amount) ? store[amount] : DoubleDigitDollarsConversion(amount, store),
 			3 => ThreeDigitsDollarsConversion(amount, store),
 			4 => FourDigitsDollarsConversion(amount, store),
+			5 => FiveDigitsDollarsConversion(amount, store),
 			_ => "INFINITE"
 		};
 
@@ -132,5 +133,22 @@ public static class TextConversionHelper
 		var convertedTextForRemainingNumbers = ThreeDigitsDollarsConversion(remainingNumbers, store);
 
 		return store[hundredsPlace] + " THOUSAND " + convertedTextForRemainingNumbers;
+	}
+
+	/// <summary>
+	/// FiveDigitsDollarsConversion
+	/// </summary>
+	/// <param name="dollars"></param>
+	/// <param name="store"></param>
+	/// <returns></returns>
+	private static string FiveDigitsDollarsConversion(int dollars, IReadOnlyDictionary<int, string> store)
+	{
+		var firstTwoPlaces = dollars / 1000;
+		var remainingNumbers = dollars % 1000;
+
+		var convertFirstTwoPlaces = DoubleDigitDollarsConversion(firstTwoPlaces, store);
+		var convertedTextForRemainingNumbers = ThreeDigitsDollarsConversion(remainingNumbers, store);
+
+		return convertFirstTwoPlaces + " THOUSAND " + convertedTextForRemainingNumbers;
 	}
 }
