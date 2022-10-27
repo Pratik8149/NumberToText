@@ -7,6 +7,10 @@ namespace NumberToText.Helpers;
 /// </summary>
 public static class TextConversionHelper
 {
+	private const string ExceededLimitError = "INVALID INPUT! => THE AMOUNT SHOULD BE BELOW 10000";
+	private const string NegativeNumberError = "INVALID INPUT! => AMOUNT SHOULD BE POSITIVE!";
+	private const string DecimalPlacesError = "INVALID INPUT! => ENTER ONLY TWO DIGITS AFTER THE DECIMAL POINT!";
+
 	/// <summary>
 	/// CovertNumberToTextFormat
 	/// </summary>
@@ -14,6 +18,11 @@ public static class TextConversionHelper
 	/// <returns></returns>
 	public static string CovertNumberToTextFormat(float numberToConvert)
 	{
+		if (numberToConvert < 0)
+		{
+			return NegativeNumberError;
+		}
+
 		var unconvertedString = numberToConvert.ToString(CultureInfo.InvariantCulture);
 		var separatedDecimal = unconvertedString.Split(".");
 
@@ -21,15 +30,18 @@ public static class TextConversionHelper
 		var cents = separatedDecimal.Length > 1 ? int.Parse(separatedDecimal[1]) : 0;
 
 		var convertedStringForDollars = GetConvertedString(dollars);
-		if (convertedStringForDollars.Equals("INVALID"))
+		switch (convertedStringForDollars)
 		{
-			return "INVALID INPUT! \nAMOUNT SHOULD BE POSITIVE!";
+			case "INFINITE":
+				return ExceededLimitError;
+			case "INVALID":
+				return NegativeNumberError;
 		}
 
 		var convertedStringForCents = GetConvertedString(cents);
 		if (convertedStringForCents.Equals("INVALID"))
 		{
-			return "INVALID INPUT! \nENTER ONLY TWO DIGITS AFTER THE DECIMAL POINT!";
+			return DecimalPlacesError;
 		}
 
 		var convertedStringForAmount = convertedStringForDollars + " DOLLARS AND " + convertedStringForCents + " CENTS";
@@ -50,11 +62,13 @@ public static class TextConversionHelper
 			return "INVALID";
 		}
 
-		var _ = Data.Store;
+		var store = Data.Store;
 		var convertedDollarsFormat = amount.ToString().Length switch
 		{
-			1 => _.ContainsKey(amount) ? _[amount] : "INVALID",
-			2 => _.ContainsKey(amount) ? _[amount] : DoubleDigitDollarsConversion(amount),
+			1 => store.ContainsKey(amount) ? store[amount] : "INVALID",
+			2 => store.ContainsKey(amount) ? store[amount] : DoubleDigitDollarsConversion(amount, store),
+			3 => ThreeDigitsDollarsConversion(amount, store),
+			4 => FourDigitsDollarsConversion(amount, store),
 			_ => "INFINITE"
 		};
 
@@ -65,26 +79,58 @@ public static class TextConversionHelper
 	/// DoubleDigitDollarsConversion
 	/// </summary>
 	/// <param name="dollars"></param>
+	/// <param name="store"></param>
 	/// <returns></returns>
-	private static string DoubleDigitDollarsConversion(int dollars)
+	private static string DoubleDigitDollarsConversion(int dollars, IReadOnlyDictionary<int, string> store)
 	{
-		var _ = Data.Store;
 		var tensPlace = dollars / 10;
 		var unitsPlace = dollars % 10;
 
 		if (tensPlace == 1)
 		{
-			return _[unitsPlace] + "TEEN";
+			return store[unitsPlace] + "TEEN";
 		}
 
-		if (_.ContainsKey(tensPlace * 10)) return _[tensPlace * 10];
-
-		var conversionToCombine = _[tensPlace] + "TY";
+		var textConversionToCombine = store.ContainsKey(tensPlace * 10) ? store[tensPlace * 10] : store[tensPlace] + "TY";
 		if (unitsPlace != 0)
 		{
-			conversionToCombine = conversionToCombine + "-" + _[unitsPlace];
+			textConversionToCombine = textConversionToCombine + "-" + store[unitsPlace];
 		}
 
-		return conversionToCombine;
+		return textConversionToCombine;
+	}
+
+	/// <summary>
+	/// ThreeDigitsDollarsConversion
+	/// </summary>
+	/// <param name="dollars"></param>
+	/// <param name="store"></param>
+	/// <returns></returns>
+	private static string ThreeDigitsDollarsConversion(int dollars, IReadOnlyDictionary<int, string> store)
+	{
+		var hundredsPlace = dollars / 100;
+		if (!store.ContainsKey(hundredsPlace)) return "INVALID";
+
+		var remainingNumbers = dollars % 100;
+		var convertedTextForRemainingNumbers = DoubleDigitDollarsConversion(remainingNumbers, store);
+
+		return store[hundredsPlace] + " HUNDRED AND " + convertedTextForRemainingNumbers;
+	}
+
+	/// <summary>
+	/// FourDigitsDollarsConversion
+	/// </summary>
+	/// <param name="dollars"></param>
+	/// <param name="store"></param>
+	/// <returns></returns>
+	private static string FourDigitsDollarsConversion(int dollars, IReadOnlyDictionary<int, string> store)
+	{
+		var hundredsPlace = dollars / 1000;
+		if (!store.ContainsKey(hundredsPlace)) return "INVALID";
+
+		var remainingNumbers = dollars % 1000;
+		var convertedTextForRemainingNumbers = ThreeDigitsDollarsConversion(remainingNumbers, store);
+
+		return store[hundredsPlace] + " THOUSAND " + convertedTextForRemainingNumbers;
 	}
 }

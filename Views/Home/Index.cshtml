@@ -17,11 +17,16 @@
                    step=".01"
                    asp-for="Amount"
                    class="form-control"
-                   placeholder="Enter the amount" />
+                   placeholder="Enter the amount"
+                   value="null" />
         </div>
 
         <button type="submit" class="btn btn-primary"> Show converted text </button>
 
-        <h2>@Model.Text</h2>
+        @if (!Model.Text.Contains("INVALID") && !Model.Text.Contains("Nothing"))
+        {
+            <h3>You entered: @Model.Amount</h3>
+        }
+        <h3>@Model.Text</h3>
     </div>
 }
